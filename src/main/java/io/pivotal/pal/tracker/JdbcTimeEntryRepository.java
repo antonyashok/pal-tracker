@@ -23,7 +23,7 @@ public class JdbcTimeEntryRepository implements TimeEntryRepository {
 	public JdbcTimeEntryRepository(DataSource dataSource) {
 		
 		this.jdbcTemplate= new JdbcTemplate(dataSource);
-		initialize();
+	//	initialize();
 	}
 
 	@Override
