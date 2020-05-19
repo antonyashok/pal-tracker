@@ -51,9 +51,6 @@ test.environment([
 
 ])
 
-task testMigrate(type: FlywayMigrateTask) {
-    url = testDbUrl
-}
 
 flyway {
     url = developmentDbUrl
@@ -62,7 +59,13 @@ flyway {
     locations = ["filesystem:databases/tracker/migrations"]
 }
 
+
+task testMigrate(type: FlywayMigrateTask) {
+    url = testDbUrl
+}
+
 springBoot {
     buildInfo()
 }
+
 
