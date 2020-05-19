@@ -1,37 +1,40 @@
 package io.pivotal.pal.tracker;
 
 import java.util.List;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/time-entries")
 public class TimeEntryController {
 
 	private TimeEntryRepository timeEntryRepository;
+	private final DistributionSummary timeEntrySummary;
+	private final Counter actionCounter;
 
 
 
-	public TimeEntryController(TimeEntryRepository timeEntryRepository) {
+	public TimeEntryController(TimeEntryRepository timeEntryRepository,
+							   MeterRegistry meterRegistry) {
 		
 		this.timeEntryRepository=timeEntryRepository;
+		timeEntrySummary = meterRegistry.summary("timeEntry.summary");
+		actionCounter = meterRegistry.counter("timeEntry.actionCounter");
 
 	}
 
-	@PostMapping("/time-entries")
+	@PostMapping
 	public ResponseEntity<TimeEntry> create(@RequestBody TimeEntry timeEntryToCreate) {
 		TimeEntry createResponse = timeEntryRepository.create(timeEntryToCreate);
 		return new ResponseEntity<TimeEntry>(createResponse,HttpStatus.CREATED);
 	}
 	
-	@GetMapping("/time-entries/{id}")
+	@GetMapping("{id}")
 	public ResponseEntity<TimeEntry> read(@PathVariable("id") long timeEntryId) {
 		TimeEntry readResponse = timeEntryRepository.find(timeEntryId);
 		if(readResponse!=null) {
@@ -43,13 +46,13 @@ public class TimeEntryController {
 		
 	}
 	
-	@GetMapping("/time-entries")
+	@GetMapping
 	public ResponseEntity<List<TimeEntry>> list() {
 		List<TimeEntry> listcreateResponse = timeEntryRepository.list();
 		return new ResponseEntity<List<TimeEntry>>(listcreateResponse,HttpStatus.OK);
 	}
 
-	@PutMapping("/time-entries/{id}")
+	@PutMapping("{id}")
 	public ResponseEntity<TimeEntry> update(@PathVariable("id") long timeEntryId, @RequestBody TimeEntry expected) {
 		TimeEntry updateResponse = timeEntryRepository.update(timeEntryId, expected);
 		if(updateResponse!=null) {
@@ -59,7 +62,7 @@ public class TimeEntryController {
 		}
 	}
 
-	@DeleteMapping("/time-entries/{id}")
+	@DeleteMapping("{id}")
 	public ResponseEntity<TimeEntry> delete(@PathVariable("id") long timeEntryId) {
 		timeEntryRepository.delete(timeEntryId);
 		return new ResponseEntity<TimeEntry>(HttpStatus.NO_CONTENT);
